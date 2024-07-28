@@ -6,10 +6,8 @@ use std::io::prelude::*;
 pub fn listen() {
     //Start the Server with the "bind" function
     let listener = TcpListener::bind("127.0.0.1:3000").unwrap();
-    //iterate over every stream of one single connection
-    //this means, that one request consists of multiple streams
-    //each of which needs to be handled
-    //like one simple get request has multiple streams that can be handled with the iteration
+    //iterate over every stream that is incoming
+    //each connection has one stream and to handle all of them we need to iterate over each
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         //call the function for each of those streams
