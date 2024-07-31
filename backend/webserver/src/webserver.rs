@@ -21,7 +21,7 @@ pub(crate) async fn listen() {
     //tell axum what the listener is and which routes we have
     axum::serve(listener, app).await.unwrap();
 }
-//Traits are like interfaces so we can assume that "IntoResponse" has implemented
+//Traits are like interfaces, so we can assume that "IntoResponse" has implemented
 //a into_response() method.
 //The impl lets us return everything that implements the "IntoResponse" trait
 async fn serve_index() -> impl IntoResponse {
