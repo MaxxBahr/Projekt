@@ -1,36 +1,37 @@
+#![allow(unused)] //No warnings for unused variables
+
 use std::fs;
-use std::net::TcpListener;
-use std::net::TcpStream;
-use std::io::prelude::*;
+use std::net::SocketAddr;
+use axum::response::{Html, IntoResponse};
+use axum::{Router, ServiceExt};
+use axum::routing::get;
+use axum::*;
+use axum::http::{Response, StatusCode};
 
-pub fn listen() {
-    //Start the Server with the "bind" function
-    let listener = TcpListener::bind("127.0.0.1:3000").unwrap();
-    //iterate over every stream that is incoming
-    //each connection has one stream and to handle all of them we need to iterate over each
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
-        //call the function for each of those streams
-        handle_connection(stream);
-    }
+#[tokio::main]
+pub(crate) async fn listen() {
+    //set all routes
+    let app = Router::new()
+        .route("/", get(serve_index))
+        .route("/test", get(|| async{Html("test <strong>test</strong>")}));
+
+    //create a listener
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+        .await.unwrap();
+    //tell axum what the listener is and which routes we have
+    axum::serve(listener, app).await.unwrap();
 }
-
-fn handle_connection(mut stream: TcpStream) {
-    //create a buffer to read the responses
-    //the buffer is initialized as an array of size 1024 with all positions set to 0
-    let mut buffer = [0; 1024];
-
-    stream.read(&mut buffer).unwrap();
-
-    let contents = fs::read_to_string("index.html").unwrap();
-
-    //return the http response as the browser needs to
-    let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}"
-                           , contents.len(),
-                           contents
-    );
-    //send response
-    stream.write(response.as_bytes()).unwrap();
-    //flush the output to ensure everything reached its target
-    stream.flush().unwrap();
+//Traits are like interfaces so we can assume that "IntoResponse" has implemented
+//a into_response() method.
+//The impl lets us return everything that implements the "IntoResponse" trait
+async fn serve_index() -> impl IntoResponse {
+    // Dateiinhalt lesen
+    match fs::read_to_string("../../frontend/index.html") {
+        Ok(contents) => Html(contents).into_response(),
+        Err(_) => (
+            axum::http::StatusCode::NOT_FOUND,
+            "Index file not found",
+        )
+            .into_response(),
+    }
 }
