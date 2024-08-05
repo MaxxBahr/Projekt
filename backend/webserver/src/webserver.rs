@@ -8,7 +8,6 @@ use axum::routing::get;
 use axum::*;
 use axum::http::{Response, StatusCode};
 
-#[tokio::main]
 pub(crate) async fn listen() {
     //set all routes
     let app = Router::new()

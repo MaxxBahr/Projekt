@@ -1,8 +1,12 @@
 use crate::webserver::listen;
+use crate::database_server::connect;
 
 mod webserver;
-mod databaseServer;
+mod database_server;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     listen();
+    connect();
+    let (first, second) =tokio::join!(listen(), connect());
 }
